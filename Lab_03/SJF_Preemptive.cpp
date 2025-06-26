@@ -1,59 +1,84 @@
 #include <bits/stdc++.h>
-#pragma GCC optimize("Ofast,fast-math,unroll-loops")
-#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,avx2,fma")
 using namespace std;
 
-#define ll long long
-#define ld long double
-#define fr first
-#define sc second
-#define mp make_pair
-#define pb push_back
-#define pp pop_back
-#define nn "\n"
-#define mod 1000000007
-#define N 200005
-#define PI 2 * acos(0.0)
-
-#define sz(x) (int)(x).size()
-#define all(v) v.begin(), v.end()
-#define srt(v) sort(v.begin(), v.end())
-#define rev(v) reverse(v.begin(), v.end())
-#define rall(v) v.rbegin(), v.rend()
-#define rsrt(v) sort(v.rbegin(), v.rend())
-#define grtsrt(v) sort(v.begin(), v.end(), greater<int>())
-#define mnv(v) *min_element(v.begin(), v.end())
-#define mxv(v) *max_element(v.begin(), v.end())
-#define dbg(x) cerr << (#x) << " = " << (x) << "\n"
-// #define cerr if (false) cerr
-
-void puzzleout()
+struct Process
 {
-    ll a, x, y;
-    cin >> a >> x >> y;
-    ll mx = max(x, y);
-    ll mn = min(x, y);
-    if (mn > a || mx < a)
-    {
-        cout << "YES" << nn;
-        return;
-    }
-    cout << "NO" << nn;
-    return;
-}
+    string id;
+    int arrival;
+    int burst;
+    int remaining;
+    int waiting = 0;
+    int turn = 0;
+    int completion = 0;
+    bool completed = false;
+};
+
 int main()
 {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    cout.tie(NULL);
+    int n = 5;
+    vector<Process> p(n);
 
-    int TC = 1;
-    cin >> TC;
-    while (TC--)
+    for (int i = 0; i < n; i++)
     {
-        puzzleout();
+        cin >> p[i].id >> p[i].arrival >> p[i].burst;
+        p[i].remaining = p[i].burst;
     }
+
+    int complete = 0, current_time = 0;
+    float total_wait = 0, total_turn = 0;
+
+    while (complete < n)
+    {
+        int shortest = -1;
+        int min_remain = INT_MAX;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (!p[i].completed && p[i].arrival <= current_time && p[i].remaining < min_remain)
+            {
+                min_remain = p[i].remaining;
+                shortest = i;
+            }
+        }
+
+        if (shortest == -1)
+        {
+            current_time++;
+            continue;
+        }
+
+       
+        p[shortest].remaining--;
+        current_time++;
+
+        if (p[shortest].remaining == 0)
+        {
+            p[shortest].completion = current_time;
+            p[shortest].turn = p[shortest].completion - p[shortest].arrival;
+            p[shortest].waiting = p[shortest].turn - p[shortest].burst;
+            p[shortest].completed = true;
+
+            total_wait += p[shortest].waiting;
+            total_turn += p[shortest].turn;
+            complete++;
+        }
+    }
+
+    cout << "Process\tArrival\tBurst\tCompletion\tWaiting\tturn\n";
+    for (int i = 0; i < n; i++)
+    {
+        cout << p[i].id << "\t"
+             << p[i].arrival << "\t"
+             << p[i].burst << "\t"
+             << p[i].completion << "\t\t"
+             << p[i].waiting << "\t"
+             << p[i].turn << endl;
+    }
+
+    cout << "\nAverage Waiting Time: " << total_wait / n << endl;
+   
     return 0;
+
 }
 /* input
 p1 0 12
