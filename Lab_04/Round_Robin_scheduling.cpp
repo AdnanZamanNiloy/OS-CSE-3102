@@ -4,96 +4,84 @@ using namespace std;
 struct Process
 {
     string name;
-    int burst_time;
-    int remaining_time;
-    int waiting_time;
-    int turnaround_time;
+    int burst,waiting,remaining,turnaround;
 };
 
-void roundRobinScheduling(vector<Process> &processes, int time_quantum)
+int main()
 {
-    queue<Process *> ready_queue;
-    int current_time = 0;
-    int completed = 0;
-    int n = processes.size();
-
-    for (auto &p : processes)
+    int n, td;
+    cin >> n>>td;
+    vector<Process> p(n);
+    for (int i = 0; i < n; i++)
     {
-        p.remaining_time = p.burst_time;
-        ready_queue.push(&p);
+        cin >> p[i].name >> p[i].burst;
+        p[i].remaining = p[i].burst;
+        p[i].waiting = 0;
+        p[i].turnaround = 0;
     }
 
-    while (!ready_queue.empty())
+    queue<int> queue;
+    int curtime = 0;
+    int completed = 0;
+
+    for (int i = 0; i < n; i++)
+        queue.push(i);
+    
+
+    // cout << "\nExecution Order:\n";
+    while (completed < n)
     {
-        Process *current = ready_queue.front();
-        ready_queue.pop();
-
-        int execution_time = min(time_quantum, current->remaining_time);
-        current->remaining_time -= execution_time;
-        current_time += execution_time;
-
-        int queue_size = ready_queue.size();
-        for (int i = 0; i < queue_size; i++)
+        if (queue.empty()== true)
+            
         {
-            Process *p = ready_queue.front();
-            ready_queue.pop();
-            p->waiting_time += execution_time;
-            ready_queue.push(p);
+            curtime++;
+            continue;
         }
 
-        if (current->remaining_time > 0)
-        {
-            ready_queue.push(current);
-        }
-        else
+        int cur = queue.front();
+        queue.pop();
+
+        int execution = min(td, p[cur].remaining);
+
+        // cout << "Process " << p[cur].name << " executes from time "
+        //      << curtime << " to " << curtime + execution << endl;
+
+        p[cur].remaining -= execution;
+        curtime += execution;
+
+        if (p[cur].remaining == 0)
         {
             completed++;
-            current->turnaround_time = current_time;
+            p[cur].turnaround = curtime;
+            p[cur].waiting = p[cur].turnaround - p[cur].burst;
         }
+        else
+            queue.push(cur);
+        
     }
-}
 
-void printResults(const vector<Process> &processes)
-{
     cout << "\nProcess\tBurst\tWaiting\tTurnaround\n";
     int total_waiting = 0;
     int total_turnaround = 0;
 
-    for (const auto &p : processes)
-    {
-        cout << p.name << "\t" << p.burst_time << "\t"
-             << p.waiting_time << "\t" << p.turnaround_time << endl;
-
-        total_waiting += p.waiting_time;
-        total_turnaround += p.turnaround_time;
-    }
-
-    float avg_waiting = static_cast<float>(total_waiting) / processes.size();
-    float avg_turnaround = static_cast<float>(total_turnaround) / processes.size();
-
-    cout << "\nAverage Waiting Time: " << avg_waiting << endl;
-    cout << "Average Turnaround Time: " << avg_turnaround << endl;
-}
-
-int main()
-{
-    int n, time_quantum;
-
-    cin >> n >> time_quantum;
-
-    vector<Process> processes(n);
-
     for (int i = 0; i < n; i++)
     {
-        cin >> processes[i].name >> processes[i].burst_time;
+        cout << p[i].name << "\t" << p[i].burst << "\t"
+             << p[i].waiting << "\t" << p[i].turnaround << endl;
+
+        total_waiting += p[i].waiting;
+        total_turnaround += p[i].turnaround;
     }
 
-    roundRobinScheduling(processes, time_quantum);
-    printResults(processes);
+    cout << fixed << setprecision(2);
+    cout << "\nAverage Waiting Time: " << (double)total_waiting / n << endl;
+    cout << "Average Turnaround Time: " << (double)total_turnaround / n << endl;
 
     return 0;
 }
+
 /*
+Sample Input:
 5 2
 p1 10
 p2 1
