@@ -4,39 +4,51 @@ using namespace std;
 struct Process
 {
     string name;
-    int arrival, burst, waiting;
+    int burst, arrival, waiting, inputSerial;
 };
 
 int main()
 {
     int n;
-   
     cin >> n;
-    vector<Process> p(n);
-    
-    for (int i = 0; i < n; ++i)
-    {
-        cin >> p[i].name >> p[i].arrival >> p[i].burst;
-    }
-   
-    sort(p.begin(), p.end(), [](const Process &a, const Process &b)
-         { return a.arrival < b.arrival; });
 
-    int current_time = 0;
-    double total_waiting = 0;
-    cout << "Process\tArrival\tBurst\tWaiting\n";
-    for (int i = 0; i < n; ++i)
+    vector<Process> p(n);
+    for (int i = 0; i < n; i++)
     {
-        if (current_time < p[i].arrival)
-            current_time = p[i].arrival;
-        p[i].waiting = current_time - p[i].arrival;
-        total_waiting += p[i].waiting;
-        cout << p[i].name << "\t" << p[i].arrival << "\t" << p[i].burst << "\t" << p[i].waiting << "\n";
-        current_time += p[i].burst;
+        cin >> p[i].name >> p[i].burst >> p[i].arrival;
+        p[i].inputSerial = i;
     }
-    cout << "Average waiting time: " << fixed << setprecision(2) << total_waiting / n << "\n";
-    return 0;
+
+    // Sort by arrival time, then by input order
+    sort(p.begin(), p.end(), [](const Process &a, const Process &b)
+         {
+        if (a.arrival != b.arrival)
+            return a.arrival < b.arrival;
+        return a.inputSerial < b.inputSerial; });
+
+    int currentime = 0;
+    int totalWaitingTime = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (p[i].arrival > currentime)
+            currentime = p[i].arrival;
+
+        p[i].waiting = currentime - p[i].arrival;
+        totalWaitingTime += p[i].waiting;
+        currentime += p[i].burst;
+    }
+    double averageWaitingTime = (double)totalWaitingTime / n;
+
+    cout << "Process\tArrival\tBurst\tWaiting\n";
+    for (int i = 0; i < n; i++)
+    {
+        cout << p[i].name << "\t" << p[i].arrival << "\t" << p[i].burst << "\t" << p[i].waiting << "\n";
+    }
+    cout << fixed << setprecision(2);
+    cout << "Average waiting time: " << averageWaitingTime << endl;
 }
+
 /*
 input
 4
